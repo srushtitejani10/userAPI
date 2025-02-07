@@ -64,7 +64,6 @@ module.exports.delData = async(req,res)=>{
 
 module.exports.getSingleData = async(req,res)=>{
     try{
-        console.log(req.query.dataId);
         let singleData = await User.findById(req.query.dataId);
         if(singleData){
             return res.status(200).json({msg:'user record found', data:singleData})
@@ -91,8 +90,6 @@ module.exports.updateData = async(req,res)=>{
             var image = '';
             req.body.userImage= User.imgPath+'/'+req.file.filename;
         }
-        console.log(req.body.userId);
-        console.log(req.body);
         let updateData = await User.findByIdAndUpdate(req.body.userId,req.body);
         if(updateData){
             return res.status(200).json({msg:'record updated',data:req.body});
