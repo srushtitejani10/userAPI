@@ -1,4 +1,6 @@
 const User = require('../modal/UserModel');
+const fs = require('fs');
+const path = require('path');
 
 module.exports.insertData = async (req, res) => {
     try {
@@ -20,7 +22,12 @@ module.exports.insertData = async (req, res) => {
 
 module.exports.addData = async (req, res) => {
     try {
-        console.log(req.body);
+        var image='';
+        if(req.file){
+            image = User.imgPath+'/'+req.file.filename;
+        }
+        req.body.userImage = image;
+
         let userData = await User.create(req.body);
         if (userData) {
             return res.status(200).json({ msg: "User Record Added Successfully", data: req.body })
@@ -37,6 +44,15 @@ module.exports.addData = async (req, res) => {
 
 module.exports.delData = async(req,res)=>{
     
+    let findData = await User.findById(req.params.id);
+    if(findData){
+        try{
+            var imgPath = path.join(__dirname,'..',findData.userImage);
+            await fs.unlinkSync(imgPath);
+        } catch(err){
+            console.log('image not found');
+        }
+    }
     let userData = await User.findByIdAndDelete(req.params.id);
     if (userData) {
         return res.status(200).json({ msg: "User Record Deleted Successfully", data: userData })
@@ -64,6 +80,17 @@ module.exports.getSingleData = async(req,res)=>{
 
 module.exports.updateData = async(req,res)=>{
     try{
+        let findData = await User.findById(req.params.id);
+        if(findData){
+            try{
+                var imgPath = path.join(__dirname,'..',findData.userImage);
+                await fs.unlinkSync(imgPath);
+            } catch(err){
+                console.log('image not found');
+            }
+            var image = '';
+            req.body.userImage= User.imgPath+'/'+req.file.filename;
+        }
         console.log(req.body.userId);
         console.log(req.body);
         let updateData = await User.findByIdAndUpdate(req.body.userId,req.body);

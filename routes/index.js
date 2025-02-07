@@ -6,6 +6,8 @@ const userCtl = require('../controller/userController');
 
 const passport = require('passport');
 
+const User = require('../modal/UserModel');
+
 routes.use('/auth',require('../routes/authRoute'))
 
 routes.get('/unauth', async(req,res)=>{
@@ -13,13 +15,13 @@ routes.get('/unauth', async(req,res)=>{
 })
 routes.get('/',passport.authenticate('jwt',{failureRedirect:'/unauth'}),userCtl.insertData)
 
-routes.post('/addData',passport.authenticate('jwt',{failureRedirect:'/unauth'}),userCtl.addData);
+routes.post('/addData',passport.authenticate('jwt',{failureRedirect:'/unauth'}),User.uploadImage,userCtl.addData);
 
 routes.delete('/delData/:id',passport.authenticate('jwt',{failureRedirect:'/unauth'}),userCtl.delData);
 
 routes.get('/getSingleData',passport.authenticate('jwt',{failureRedirect:'/unauth'}),userCtl.getSingleData);
 
-routes.put('/updateData',passport.authenticate('jwt',{failureRedirect:'/unauth'}),userCtl.updateData)
+routes.put('/updateData',passport.authenticate('jwt',{failureRedirect:'/unauth'}),User.uploadImage,userCtl.updateData)
 
 
 
