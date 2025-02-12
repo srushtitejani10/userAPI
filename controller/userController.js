@@ -1,17 +1,43 @@
+const { query } = require('express');
 const User = require('../modal/UserModel');
 const fs = require('fs');
 const path = require('path');
 
-module.exports.insertData = async (req, res) => {
+module.exports.addData = async (req, res) => {
     try {
-        let userData = await User.find();
+
+        var page = 0;
+        var per_page = 2;
+        if(req.query.page){
+            page = req.query.page
+        }
+        let search ='';
+        if(req.query.search){
+            search = req.query.search;
+        }
+        let userData = await User.find({status: true,
+            $or:[
+                {username:{ $regex:search,$options:'i'}},
+                {email:{ $regex:search,$options:'i'}}
+            ]
+        }).skip(page*per_page).limit(per_page);
+
+        let userTotalData = await User.find({status: true,
+            $or:[
+                {username:{ $regex:search,$options:'i'}},
+                {email:{ $regex:search,$options:'i'}}
+            ]
+        }).countDocuments();
+
+        let totalPage = Math.ceil(userTotalData/per_page);
+
+        let userFalseData = await User.find({status: false});
         if (userData) {
             console.log("Insert Data");
-            return res.status(200).json({ msg: "Request get successfully", userData});
+            return res.status(200).json({ msg: "Request get successfully", data:userData,deactiveData:userFalseData,totalPage:totalPage,page:page,search});
         }
         else {
-            return res.status(200).json({ msg: 'data not get', error: "err"})
-
+            return res.status(200).json({ msg: 'data not get', error: "err"});  
         }
     }
     catch (err) {
@@ -20,7 +46,7 @@ module.exports.insertData = async (req, res) => {
     }
 }
 
-module.exports.addData = async (req, res) => {
+module.exports.insertData = async (req, res) => {
     try {
         var image='';
         if(req.file){
@@ -96,6 +122,33 @@ module.exports.updateData = async(req,res)=>{
         }
         else{
             return res.status(200).json({msg:'record not update'})
+        }
+    }
+    catch(err){
+        return res.status(400).json({msg:'something wrong',error:err});
+    }
+}
+
+module.exports.statusChange = async(req,res)=>{
+    try{
+        console.log(req.query); 
+        let checkUserData = await User.findById(req.query.userId);
+        if(checkUserData){
+            if(req.query.userStatus=="true"){
+                let changeStatus = await User.findByIdAndUpdate(req.query.userId,{status:false});
+                if(changeStatus){
+                    return res.status(200).json({msg:'status deactive Successfully'});
+                } else{
+                    return res.status(200).json({msg:'status not updated'});
+                }
+            } else{
+                let changeStatus = await User.findByIdAndUpdate(req.query.userId,{status:true});
+                if(changeStatus){
+                    return res.status(200).json({msg:'status Active Successfully'});
+                } else{
+                    return res.status(200).json({msg:'status not updated'});
+                }
+            }
         }
     }
     catch(err){
