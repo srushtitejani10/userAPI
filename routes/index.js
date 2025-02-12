@@ -6,7 +6,7 @@ const userCtl = require('../controller/userController');
 
 const passport = require('passport');
 
-const User = require('../modal/UserModel');
+const User = require('../modal/UserModel'); gdgf
 const { route } = require('../routes/authRoute');
 
 routes.use('/auth',require('../routes/authRoute'))
